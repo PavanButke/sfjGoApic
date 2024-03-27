@@ -1,3 +1,7 @@
+# How to run app
+- `go run .` (at root folder)
+
+
 ## DB Conection
 - postgres: assign db
 - INSERT Query:
