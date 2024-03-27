@@ -46,3 +46,37 @@
 
 # Websocket 
 - ws://localhost:8098/ws
+
+# Project Structure
+-project-root/
+│
+│   └── config.yaml            # Configuration files (e.g., database config)
+│
+├── handlers/                 
+│   ├── handler.go            # Define Add Job and Update Job Logic
+│   └── job_interfacce.go     # Declaring funcs
+│
+├── models/                   
+│   └── db.go                # Define data models (e.g., Job struct)
+│
+├── server/                   
+│   ├── router.go              # Define routes 
+│   └── server.go              # Start HTTP server
+    └── middleware.go          # middleware       
+│
+├── app/                 
+│   └── sfj.go                  # Shortest-First Logic Impl
+│
+├── websocket/                    
+│   └── ws.go                   # Websocket functions
+│
+│
+├── main.go                   # Entry point of the application
+│
+└── README.md                 # Documentation about the project
+
+# What Can Be Improved
+- A seperate queries class can be developed
+- Gin can also be used
+- Config.yaml may be hidden
+  
