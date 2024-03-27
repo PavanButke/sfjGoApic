@@ -19,6 +19,7 @@ func NewHandler(scheduler *app.SJFScheduler) *Handler {
 }
 
 func (h *Handler) SubmitJobHandler(w http.ResponseWriter, r *http.Request) {
+	
 	// Decode the JSON payload into a Job struct
 	var job models.Job
 	err := json.NewDecoder(r.Body).Decode(&job)

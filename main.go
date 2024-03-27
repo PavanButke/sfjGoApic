@@ -15,10 +15,10 @@ import (
 	"syscall"
 
 	_ "github.com/lib/pq"
+	"github.com/rs/cors" // Import the cors package
 	"gopkg.in/yaml.v2"
 )
 
-// Config represents the structure of the YAML configuration file
 type Config struct {
 	Database struct {
 		Host     string `yaml:"host"`
@@ -30,7 +30,7 @@ type Config struct {
 }
 
 func main() {
-	// Load configuration from config.yaml file
+	// Read config file and set up database connection
 	configFile, err := ioutil.ReadFile("config.yaml")
 	if err != nil {
 		log.Fatalf("Error reading config file: %v", err)
@@ -41,7 +41,6 @@ func main() {
 		log.Fatalf("Error parsing config file: %v", err)
 	}
 
-	// Create connection string for PostgreSQL database
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		config.Database.Host,
 		config.Database.Port,
@@ -49,32 +48,31 @@ func main() {
 		config.Database.Password,
 		config.Database.DBName)
 
-	// Connect to the PostgreSQL database
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		log.Fatalf("Error connecting to the database: %v", err)
 	}
 	defer db.Close()
 
-	// Ping the database to verify connection
 	if err := db.Ping(); err != nil {
 		log.Fatalf("Error pinging the database: %v", err)
 	}
-	// Create a scheduler instance
-	scheduler := app.NewSJFScheduler(db)
 
-	// Create a handler instance using NewHandler function from handlers package
+	// Create an instance of the scheduler and handler
+	scheduler := app.NewSJFScheduler(db)
 	handler := handlers.NewHandler(scheduler)
 
+	// Create a router and wrap it with CORS middleware
 	router := server.NewRouter(handler, 8099)
+	c := cors.Default().Handler(router.Router())
 
-	s := server.NewServer(":8099", router.Router(), ":8098")
+	// Create and start the HTTP server
+	s := server.NewServer(":8099", c, ":8098")
 
-	// Create a context for graceful shutdown
+	// Set up graceful shutdown
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Handle OS signals for graceful shutdown
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, os.Interrupt, syscall.SIGTERM)
 	go func() {
